@@ -1,0 +1,57 @@
+# ----------------------
+# OS / Editor
+# ----------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+
+# ----------------------
+# Java / Maven (backend)
+# ----------------------
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.flattened-pom.xml
+*.class
+
+# Logs
+*.log
+logs/
+
+# ----------------------
+# Node / Vite (frontend)
+# ----------------------
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# npm/yarn/pnpm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ----------------------
+# Env / Secrets
+# ----------------------
+.env
+.env.*
+!.env.example
+
+# IntelliJ
+.idea/
+*.iml
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# Temporary files
+*.tmp
+*.temp
