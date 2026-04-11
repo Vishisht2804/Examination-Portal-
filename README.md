@@ -42,6 +42,12 @@ cd backend
 mvn spring-boot:run
 ```
 
+If MongoDB service is installed but stopped:
+
+```powershell
+Start-Service MongoDB
+```
+
 Backend default URL:
 - `http://localhost:8085`
 
@@ -75,5 +81,7 @@ npm run build
 ## Notes
 
 - `backend/src/main/resources/application.yml` sets backend port to `8085`.
-- `run-oems.ps1` and `stop-oems.ps1` currently reference port `8081` for backend process management. If needed, update those scripts to `8085` for full alignment.
+- `run-oems.ps1` and `stop-oems.ps1` are aligned to backend port `8085`.
+- `run-oems.ps1` checks for local MongoDB and attempts to start the Windows `MongoDB` service.
+- Set `MONGODB_URI` to use a non-local MongoDB instance.
 - If Maven shows certificate warnings (`PKIX path building failed`), this is usually a Java trust/certificate issue, not an app-code error.
