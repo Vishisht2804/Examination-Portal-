@@ -85,3 +85,23 @@ npm run build
 - `run-oems.ps1` checks for local MongoDB and attempts to start the Windows `MongoDB` service.
 - Set `MONGODB_URI` to use a non-local MongoDB instance.
 - If Maven shows certificate warnings (`PKIX path building failed`), this is usually a Java trust/certificate issue, not an app-code error.
+
+## Database Seeding Behavior
+
+- On first run (empty database), backend seeds demo users/courses/exams/questions automatically.
+- On later runs, backend keeps existing database data by default (no automatic wipe).
+- To force a fresh reset and reseed, set `SEED_RESET=true` when starting backend.
+
+Examples (PowerShell):
+
+```powershell
+cd backend
+$env:SEED_RESET = 'true'
+mvn spring-boot:run
+```
+
+After reset, clear the variable (or close terminal) for normal runs:
+
+```powershell
+Remove-Item Env:SEED_RESET
+```

@@ -2,6 +2,9 @@ package com.oems.config;
 
 import com.oems.model.*;
 import com.oems.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -12,31 +15,56 @@ import java.util.*;
 @Component
 public class DataSeeder implements CommandLineRunner {
 
+        private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
+
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final ExamRepository examRepository;
     private final QuestionRepository questionRepository;
     private final PasswordEncoder passwordEncoder;
+        private final boolean seedEnabled;
+        private final boolean seedReset;
 
     public DataSeeder(UserRepository userRepository,
                       CourseRepository courseRepository,
                       ExamRepository examRepository,
                       QuestionRepository questionRepository,
-                      PasswordEncoder passwordEncoder) {
+                                          PasswordEncoder passwordEncoder,
+                                          @Value("${app.seed.enabled:true}") boolean seedEnabled,
+                                          @Value("${app.seed.reset:false}") boolean seedReset) {
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.examRepository = examRepository;
         this.questionRepository = questionRepository;
         this.passwordEncoder = passwordEncoder;
+                this.seedEnabled = seedEnabled;
+                this.seedReset = seedReset;
     }
 
     @Override
     public void run(String... args) {
-        // Clear existing data for fresh seeding
-        questionRepository.deleteAll();
-        examRepository.deleteAll();
-        courseRepository.deleteAll();
-        userRepository.deleteAll();
+                if (!seedEnabled) {
+                        log.info("Data seeding disabled (app.seed.enabled=false)");
+                        return;
+                }
+
+                long usersCount = userRepository.count();
+                boolean hasData = usersCount > 0;
+
+                if (hasData && !seedReset) {
+                        log.info("Skipping data seed because existing data was found. Set app.seed.reset=true (or SEED_RESET=true) to reseed.");
+                        return;
+                }
+
+                if (seedReset) {
+                        log.info("Reset seed enabled. Clearing existing OEMS data before seeding.");
+                        questionRepository.deleteAll();
+                        examRepository.deleteAll();
+                        courseRepository.deleteAll();
+                        userRepository.deleteAll();
+                } else {
+                        log.info("No existing data found. Applying initial seed dataset.");
+                }
 
         // Create Admin & Teachers
         User admin = createUser("admin", "admin@oems.com", "admin123", "Admin User", Role.ADMIN);
