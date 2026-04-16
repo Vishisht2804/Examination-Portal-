@@ -1,6 +1,7 @@
 import api from './axios';
 
 export const studentExams = () => api.get('/student/exams');
+export const studentCourses = () => api.get('/student/courses');
 export const studentExamInfo = (id) => api.get(`/student/exams/${id}`);
 export const startExam = (id) => api.post(`/student/exams/${id}/start`);
 export const getAttempt = (id) => api.get(`/student/attempts/${id}`);

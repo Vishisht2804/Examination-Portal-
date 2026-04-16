@@ -4,12 +4,10 @@ import com.oems.model.AttemptStatus;
 
 import java.time.LocalDateTime;
 
-public record AttemptHistoryItemResponse(
+public record TeacherStudentCourseResultResponse(
         String attemptId,
         String examId,
         String examTitle,
-        String courseId,
-        String courseName,
         Integer score,
         Integer totalMarks,
         boolean passed,

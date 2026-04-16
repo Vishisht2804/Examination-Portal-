@@ -1,6 +1,8 @@
 import api from './axios';
 
 export const teacherCourses = () => api.get('/teacher/courses');
+export const teacherCourseStudents = (courseId) => api.get(`/teacher/courses/${courseId}/students`);
+export const teacherStudentCourseResults = (courseId, studentId) => api.get(`/teacher/courses/${courseId}/students/${studentId}/results`);
 export const createExam = (payload) => api.post('/teacher/exams', payload);
 export const teacherExams = () => api.get('/teacher/exams');
 export const examDetail = (id) => api.get(`/teacher/exams/${id}`);

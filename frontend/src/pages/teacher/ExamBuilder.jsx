@@ -7,12 +7,14 @@ export default function ExamBuilder() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
+  const [isPublished, setIsPublished] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', courseId: '', durationMinutes: 30, scheduledStart: '', scheduledEnd: '', passPercentage: 40, randomizeQuestions: true });
 
   useEffect(() => {
     teacherCourses().then((r) => setCourses(r.data));
     if (id) examDetail(id).then((r) => {
       const e = r.data;
+      setIsPublished(Boolean(e.published));
       setForm({
         title: e.title,
         description: e.description || '',
@@ -28,9 +30,13 @@ export default function ExamBuilder() {
 
   const submit = async (ev) => {
     ev.preventDefault();
+    if (isPublished) {
+      alert('Published exam cannot be edited.');
+      return;
+    }
     const payload = {
       ...form,
-      courseId: Number(form.courseId),
+      courseId: form.courseId,
       durationMinutes: Number(form.durationMinutes),
       passPercentage: Number(form.passPercentage),
       scheduledStart: new Date(form.scheduledStart).toISOString(),
@@ -45,6 +51,7 @@ export default function ExamBuilder() {
       <Navbar />
       <form className="page-shell space-y-3 rounded-xl bg-white p-5 shadow" onSubmit={submit}>
         <h2 className="text-xl font-bold">Exam Builder</h2>
+        {isPublished && <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">This exam is published and locked from edits.</p>}
         <input className="w-full rounded border p-2" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
         <textarea className="w-full rounded border p-2" placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
         <select className="w-full rounded border p-2" value={form.courseId} onChange={(e) => setForm({ ...form, courseId: e.target.value })}>
@@ -60,7 +67,7 @@ export default function ExamBuilder() {
           <input className="rounded border p-2" type="datetime-local" value={form.scheduledEnd} onChange={(e) => setForm({ ...form, scheduledEnd: e.target.value })} />
         </div>
         <label className="flex items-center gap-2"><input type="checkbox" checked={form.randomizeQuestions} onChange={(e) => setForm({ ...form, randomizeQuestions: e.target.checked })} /> Randomize questions</label>
-        <button className="rounded bg-sky-600 px-4 py-2 text-white">Save</button>
+        <button disabled={isPublished} className="rounded bg-sky-600 px-4 py-2 text-white disabled:cursor-not-allowed disabled:bg-slate-400">Save</button>
       </form>
     </>
   );

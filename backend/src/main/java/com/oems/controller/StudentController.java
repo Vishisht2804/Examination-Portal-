@@ -40,6 +40,12 @@ public class StudentController {
         return examService.availableExamsForStudent(courseIds);
     }
 
+    @GetMapping("/courses")
+    public List<CourseResponse> myCourses() {
+        User student = currentUserService.requireCurrentUser();
+        return courseService.studentCourseResponses(student.getId());
+    }
+
     @GetMapping("/exams/{id}")
     public ExamResponse examInfo(@PathVariable String id) {
         User student = currentUserService.requireCurrentUser();

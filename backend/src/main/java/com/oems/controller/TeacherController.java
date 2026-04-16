@@ -35,6 +35,18 @@ public class TeacherController {
         return courseService.teacherCourses(teacher.getId());
     }
 
+    @GetMapping("/courses/{id}/students")
+    public List<UserResponse> courseStudents(@PathVariable String id) {
+        User teacher = currentUserService.requireCurrentUser();
+        return courseService.studentsForTeacherCourse(teacher.getId(), id);
+    }
+
+    @GetMapping("/courses/{courseId}/students/{studentId}/results")
+    public List<TeacherStudentCourseResultResponse> studentResults(@PathVariable String courseId, @PathVariable String studentId) {
+        User teacher = currentUserService.requireCurrentUser();
+        return resultService.studentResultsForTeacherCourse(teacher, courseId, studentId);
+    }
+
     @PostMapping("/exams")
     public ExamResponse createExam(@Valid @RequestBody ExamCreateUpdateRequest request) {
         User teacher = currentUserService.requireCurrentUser();

@@ -17,6 +17,17 @@ export default function AttemptHistory() {
       .catch(() => setLoading(false));
   }, []);
 
+  const groupedAttempts = attempts.reduce((acc, attempt) => {
+    const key = attempt.courseId || 'unknown';
+    if (!acc[key]) {
+      acc[key] = { courseName: attempt.courseName || 'Unassigned Course', attempts: [] };
+    }
+    acc[key].attempts.push(attempt);
+    return acc;
+  }, {});
+
+  const groupedEntries = Object.entries(groupedAttempts);
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'SUBMITTED':
@@ -64,54 +75,61 @@ export default function AttemptHistory() {
         )}
 
         {!loading && attempts.length > 0 && (
-          <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow">
-            <table className="w-full">
-              <thead className="border-b border-slate-200 bg-slate-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Exam</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Status</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Score</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Result</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Started</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200">
-                {attempts.map((attempt) => {
-                  const percentage = attempt.totalMarks > 0 ? Math.round((attempt.score / attempt.totalMarks) * 100) : 0;
-                  return (
-                    <tr key={attempt.attemptId} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 text-sm font-medium text-slate-900">{attempt.examTitle}</td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-block rounded-full px-3 py-1 text-xs font-semibold border ${getStatusColor(attempt.status)}`}>
-                          {attempt.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm font-semibold text-slate-900">
-                        {attempt.score}/{attempt.totalMarks}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-slate-900">{percentage}%</span>
-                          <span className={attempt.passed ? 'text-lime text-xl' : 'text-coral text-xl'}>
-                            {attempt.passed ? '✓' : '✗'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{formatDate(attempt.startedAt)}</td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => navigate(`/student/results/${attempt.attemptId}`)}
-                          className="inline-block rounded-lg bg-sky-100 px-3 py-1 text-sm font-semibold text-sky-700 hover:bg-sky-200 transition-colors"
-                        >
-                          View
-                        </button>
-                      </td>
+          <div className="space-y-6">
+            {groupedEntries.map(([courseId, course]) => (
+              <div key={courseId} className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow">
+                <div className="border-b border-slate-200 bg-slate-50 px-6 py-3 text-sm font-semibold text-slate-900">
+                  {course.courseName}
+                </div>
+                <table className="w-full">
+                  <thead className="border-b border-slate-200 bg-slate-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Exam</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Status</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Score</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Result</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Started</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-slate-900">Action</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {course.attempts.map((attempt) => {
+                      const percentage = attempt.totalMarks > 0 ? Math.round((attempt.score / attempt.totalMarks) * 100) : 0;
+                      return (
+                        <tr key={attempt.attemptId} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4 text-sm font-medium text-slate-900">{attempt.examTitle}</td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-block rounded-full px-3 py-1 text-xs font-semibold border ${getStatusColor(attempt.status)}`}>
+                              {attempt.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm font-semibold text-slate-900">
+                            {attempt.score}/{attempt.totalMarks}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-slate-900">{percentage}%</span>
+                              <span className={attempt.passed ? 'text-lime text-xl' : 'text-coral text-xl'}>
+                                {attempt.passed ? '✓' : '✗'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-600">{formatDate(attempt.startedAt)}</td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={() => navigate(`/student/results/${attempt.attemptId}`)}
+                              className="inline-block rounded-lg bg-sky-100 px-3 py-1 text-sm font-semibold text-sky-700 hover:bg-sky-200 transition-colors"
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ))}
           </div>
         )}
       </div>

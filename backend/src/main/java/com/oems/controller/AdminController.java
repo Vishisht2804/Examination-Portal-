@@ -59,6 +59,16 @@ public class AdminController {
         return courseService.findAll();
     }
 
+    @PutMapping("/courses/{id}")
+    public CourseResponse updateCourse(@PathVariable String id, @Valid @RequestBody CourseUpdateRequest request) {
+        return courseService.update(id, request);
+    }
+
+    @DeleteMapping("/courses/{id}")
+    public void deleteCourse(@PathVariable String id) {
+        courseService.delete(id);
+    }
+
     @GetMapping("/exams")
     public List<ExamResponse> exams() {
         return examService.allExams();
@@ -72,6 +82,21 @@ public class AdminController {
     @PutMapping("/courses/{id}/teacher")
     public CourseResponse reassignTeacher(@PathVariable String id, @Valid @RequestBody ReassignTeacherRequest request) {
         return courseService.reassignTeacher(id, request);
+    }
+
+    @DeleteMapping("/courses/{id}/teacher")
+    public CourseResponse removeTeacher(@PathVariable String id) {
+        return courseService.removeTeacher(id);
+    }
+
+    @PostMapping("/courses/{id}/students/{studentId}")
+    public CourseResponse addStudent(@PathVariable String id, @PathVariable String studentId) {
+        return courseService.addStudent(id, studentId);
+    }
+
+    @DeleteMapping("/courses/{id}/students/{studentId}")
+    public CourseResponse removeStudent(@PathVariable String id, @PathVariable String studentId) {
+        return courseService.removeStudent(id, studentId);
     }
 
     @GetMapping("/results/exam/{examId}")

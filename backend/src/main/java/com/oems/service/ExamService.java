@@ -31,7 +31,7 @@ public class ExamService {
     public ExamResponse createExam(User teacher, ExamCreateUpdateRequest request) {
         Course course = courseRepository.findById(request.courseId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Course not found"));
-        if (!course.getTeacher().getId().equals(teacher.getId())) {
+        if (course.getTeacher() == null || !course.getTeacher().getId().equals(teacher.getId())) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Teacher can only create exam in own courses");
         }
         Exam exam = Exam.builder()
@@ -76,9 +76,12 @@ public class ExamService {
         if (!exam.getTeacher().getId().equals(teacher.getId())) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Forbidden");
         }
+        if (exam.isPublished()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Published exam cannot be edited");
+        }
         Course course = courseRepository.findById(request.courseId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Course not found"));
-        if (!course.getTeacher().getId().equals(teacher.getId())) {
+        if (course.getTeacher() == null || !course.getTeacher().getId().equals(teacher.getId())) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Teacher can only assign own course");
         }
         exam.setTitle(request.title());
@@ -96,6 +99,7 @@ public class ExamService {
     public QuestionResponse addQuestion(User teacher, String examId, QuestionCreateRequest request) {
         Exam exam = getExam(examId);
         ensureTeacherOwnsExam(teacher, exam);
+        ensureExamEditable(exam);
         int orderIndex = questionRepository.findByExamIdOrderByOrderIndexAsc(examId).size() + 1;
         Question q = Question.builder()
                 .exam(exam)
@@ -117,6 +121,7 @@ public class ExamService {
         Question q = questionRepository.findById(questionId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Question not found"));
         ensureTeacherOwnsExam(teacher, q.getExam());
+        ensureExamEditable(q.getExam());
         q.setQuestionText(request.questionText());
         q.setOptionA(request.optionA());
         q.setOptionB(request.optionB());
@@ -134,6 +139,7 @@ public class ExamService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Question not found"));
         ensureTeacherOwnsExam(teacher, q.getExam());
         Exam exam = q.getExam();
+        ensureExamEditable(exam);
         questionRepository.delete(q);
         List<Question> remaining = questionRepository.findByExamIdOrderByOrderIndexAsc(exam.getId());
         for (int i = 0; i < remaining.size(); i++) {
@@ -167,8 +173,9 @@ public class ExamService {
             return List.of();
         }
         LocalDateTime now = LocalDateTime.now();
-        return examRepository.findByCourseIdInAndPublishedTrueAndScheduledStartBeforeAndScheduledEndAfter(enrolledCourseIds, now, now)
-                .stream()
+        return examRepository.findByPublishedTrue().stream()
+                .filter(exam -> enrolledCourseIds.contains(exam.getCourse().getId()))
+                .filter(exam -> !now.isBefore(exam.getScheduledStart()) && !now.isAfter(exam.getScheduledEnd()))
                 .map(exam -> mapperService.toExamResponse(exam, questionRepository.countByExamId(exam.getId())))
                 .toList();
     }
@@ -219,6 +226,12 @@ public class ExamService {
     private void ensureTeacherOwnsExam(User teacher, Exam exam) {
         if (!exam.getTeacher().getId().equals(teacher.getId())) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Forbidden");
+        }
+    }
+
+    private void ensureExamEditable(Exam exam) {
+        if (exam.isPublished()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Published exam cannot be edited");
         }
     }
 
