@@ -12,6 +12,8 @@ app:
   jwt:
     secret: 12345678901234567890123456789012
     expiration-ms: 86400000
+  auth:
+    max-failed-login-attempts: 3
   seed:
     enabled: ${SEED_ENABLED:true}
     reset: ${SEED_RESET:false}

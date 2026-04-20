@@ -49,9 +49,13 @@ public class UserService {
 
     public UserResponse update(String id, UserUpdateRequest request) {
         User user = userRepository.findById(id).orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
+        boolean wasInactive = !user.isActive();
         user.setFullName(request.fullName());
         user.setEmail(request.email());
         user.setActive(request.active());
+        if (wasInactive && request.active()) {
+            user.setFailedLoginAttempts(0);
+        }
         return mapperService.toUserResponse(userRepository.save(user));
     }
 

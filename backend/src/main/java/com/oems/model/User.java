@@ -27,5 +27,8 @@ public class User {
     private boolean active = true;
 
     @Builder.Default
+    private int failedLoginAttempts = 0;
+
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 }
